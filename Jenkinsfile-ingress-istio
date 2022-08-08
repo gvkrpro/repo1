@@ -26,7 +26,7 @@ stages{
 			}
 		}
 	}
-	
+/*	
   stage("Static Code Analysis"){
 		steps{
 		   withSonarQubeEnv('Sonarqube') {
@@ -39,7 +39,7 @@ stages{
 			}
 		}
 	}
-  
+*/  
 	stage("Packaging"){
 		steps{
 			dir('TestWebApp'){
@@ -82,20 +82,49 @@ stages{
 			sh '''
 				curl -o kubectl https://s3.us-west-2.amazonaws.com/amazon-eks/1.22.6/2022-03-09/bin/linux/amd64/kubectl
 				chmod +x ./kubectl
+				mkdir k8s || echo "folder k8s is available"
+				mv kubectl k8s/
+				cd k8s/
+				export PATH=$PWD/bin:$PATH
 				aws eks update-kubeconfig --name gvkrsoltuions
-				./kubectl cluster-info
+				kubectl cluster-info
 			'''
 		}
 	}
-	stage("Deploy to EKS"){
+	
+	stage("install ISTIO"){
+		steps{
+			sh '''
+curl -L https://istio.io/downloadIstio | sh -
+cd istio-1.14.3
+export PATH=$PWD/bin:$PATH
+
+istioctl install --set profile=demo -y
+kubectl label namespace default istio-injection=enabled
+			'''
+		}
+	}			
+	stage("Deploy to EKS-ISTIO-Ingress"){
 		steps{
 				sh """
-				./kubectl delete -f deployment-test-ingress.yaml --v 6|| true
-				./kubectl apply -f deployment-test-ingress.yaml --v 6|| true
-				./kubectl get pods
-				./kubectl get pods -o wide
-				./kubectl get svc
-				./kubectl get nodes -o wide
+kubectl apply -f deployment-test-ingress.yaml || true
+kubectl get services
+kubectl get pods
+
+kubectl apply -f deployment-test-ingress-gateway.yaml || true
+
+istioctl analyze
+
+kubectl get svc istio-ingressgateway -n istio-system
+
+export INGRESS_HOST=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+export INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].port}')
+export SECURE_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].port}')
+
+export INGRESS_HOST=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+
+export GATEWAY_URL=$INGRESS_HOST:$INGRESS_PORT
+echo "$GATEWAY_URL"			
 				"""
 		}
 	}
