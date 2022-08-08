@@ -106,7 +106,7 @@ kubectl label namespace default istio-injection=enabled
 	}			
 	stage("Deploy to EKS-ISTIO-Ingress"){
 		steps{
-				sh """
+				sh '''
 kubectl apply -f deployment-test-ingress.yaml || true
 kubectl get services
 kubectl get pods
@@ -125,7 +125,7 @@ export INGRESS_HOST=$(kubectl -n istio-system get service istio-ingressgateway -
 
 export GATEWAY_URL=$INGRESS_HOST:$INGRESS_PORT
 echo "$GATEWAY_URL"			
-				"""
+'''
 		}
 	}
 }
