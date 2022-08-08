@@ -41,8 +41,8 @@ spec:
         appName: testwebapp
     ports:
     - name: http
-      port: 8080 #If target port and hostport both are same then no need to mention target-port separately
-#      targetPort: 8080
+      port: 80 #If target port and hostport both are same then no need to mention target-port separately
+      targetPort: 8080
 
 
 ---
