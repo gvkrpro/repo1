@@ -82,8 +82,8 @@ stages{
 			sh '''
 				curl -o kubectl https://s3.us-west-2.amazonaws.com/amazon-eks/1.22.6/2022-03-09/bin/linux/amd64/kubectl
 				chmod +x ./kubectl
-				mkdir k8s || echo "folder k8s is available"
-				mv kubectl k8s/
+				mkdir -p k8s/bin || echo "folder k8s is available"
+				mv kubectl k8s/bin/
 				cd k8s/
 				export PATH=$PWD/bin:$PATH
 				aws eks update-kubeconfig --name gvkrsoltuions
