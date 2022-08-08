@@ -98,8 +98,8 @@ stages{
 curl -L https://istio.io/downloadIstio | sh -
 cd istio-1.14.3
 export PATH=$PWD/bin:$PATH
-
 istioctl install --set profile=demo -y
+alias kubectl=k8s/bin/kubectl
 kubectl label namespace default istio-injection=enabled
 			'''
 		}
@@ -107,6 +107,7 @@ kubectl label namespace default istio-injection=enabled
 	stage("Deploy to EKS-ISTIO-Ingress"){
 		steps{
 				sh '''
+alias kubectl=k8s/bin/kubectl
 kubectl apply -f deployment-test-ingress.yaml || true
 kubectl get services
 kubectl get pods
