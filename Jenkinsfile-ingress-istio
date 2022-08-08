@@ -99,6 +99,7 @@ curl -L https://istio.io/downloadIstio | sh -
 cd istio-1.14.3
 export PATH=$PWD/bin:$PATH
 istioctl install --set profile=demo -y
+cd ..
 alias kubectl=k8s/bin/kubectl
 kubectl label namespace default istio-injection=enabled
 			'''
