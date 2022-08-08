@@ -1,0 +1,54 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment 
+  labels:
+    appName: testwebapp
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+        appName: testwebapp
+  template:
+    metadata:
+      labels:
+        appName: testwebapp
+    spec:
+      serviceAccountName: test-service-account
+      containers:
+        - name: testwebapp
+          image: index.docker.io/gvkr1409/testwebapp:latest
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          imagePullPolicy: Always
+      imagePullSecrets:
+        - name: docker-creds
+
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: my-testwebapp
+    labels:
+      appName: testwebapp
+      service: testwebapp
+spec:
+    selector:
+        appName: testwebapp
+    ports:
+    - name: http
+      port: 8080 #If target port and hostport both are same then no need to mention target-port separately
+#      targetPort: 8080
+
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: test-service-account
+  labels:
+    appName: my-testwebapp
