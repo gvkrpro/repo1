@@ -7,6 +7,11 @@ metadata:
     appName: testwebapp
 spec:
   replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
         appName: testwebapp
@@ -23,8 +28,29 @@ spec:
             - containerPort: 8080
               protocol: TCP
           imagePullPolicy: Always
+
+          readinessProbe:
+                initialDelaySeconds: 20
+                periodSeconds: 5
+                timeoutSeconds: 10
+                successThreshold: 1
+                failureThreshold: 5
+                httpGet:
+                    path: /TestWebApp
+                    port: 8080
+          livenessProbe:
+                initialDelaySeconds: 20
+                periodSeconds: 5
+                timeoutSeconds: 10
+                successThreshold: 1
+                failureThreshold: 5
+                httpGet:
+                    path: /TestWebApp
+                    port: 8080          
+
       imagePullSecrets:
         - name: docker-creds
+
 
 
 
