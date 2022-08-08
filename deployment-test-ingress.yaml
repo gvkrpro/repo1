@@ -63,6 +63,7 @@ metadata:
       appName: testwebapp
       service: testwebapp
 spec:
+    clusterIP: None
     selector:
         appName: testwebapp
     ports:
