@@ -108,8 +108,7 @@ kubectl label namespace default istio-injection=enabled || true
 	stage("Deploy to EKS-ISTIO-Ingress"){
 		steps{
 				sh '''
-cd istio-1.14.3
-export PATH=$PWD/bin:$PATH
+export PATH=$PWD/istio-1.14.3/bin:$PATH
 alias kubectl=k8s/bin/kubectl
 kubectl apply -f deployment-test-ingress.yaml || true
 kubectl get services
