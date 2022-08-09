@@ -24,3 +24,10 @@ spec:
             name: test-tom
             port:
               number: 5001
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: test-tom
+            port:
+             number: 5001
