@@ -104,6 +104,7 @@ kubectl get services
 kubectl get pods
 
 kubectl apply -f nginx-ingress-deploy.yaml || true
+kubectl get ingress
 '''
 		}
 	}
