@@ -10,13 +10,13 @@ spec:
 #  - host: <domain>
   - http:
       paths:
-      - pathType: Prefix
-        path: "/"
-        backend:
-          service:
-            name: deploy1
-            port:
-             number: 5000
+#      - pathType: Prefix
+#        path: "/"
+#        backend:
+#          service:
+#            name: deploy1
+#            port:
+#             number: 5000
       - pathType: Prefix
         path: "/TestWebApp"
         backend:
