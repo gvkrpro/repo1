@@ -15,7 +15,7 @@ stages{
       sh '''
       echo "Cleaning Workspace"
       rm -rf ${WORKSPACE}/target
-      docker rmi --no-prune $(docker images -q)
+      docker rmi --no-prune $(docker images -q) || true
       
       '''
 			}
