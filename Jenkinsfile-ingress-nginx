@@ -1,3 +1,4 @@
+def tag_name
 pipeline{
 agent any
 
@@ -101,7 +102,7 @@ stages{
 		steps{
 				sh '''
 kubectl.exe apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/aws/1.22/deploy.yaml || true
-sed -i "s/latest/$tag_name/g" deployment.yaml
+sed -i "s/latest/${tag_name}/g" deployment.yaml
 cat deployment.yaml
 kubectl apply -f deployment.yaml || true
 kubectl get services
