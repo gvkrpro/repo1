@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
         - name: testwebapp1
-          image: index.docker.io/gvkr1409/testwebapp:latest
+          image: index.docker.io/gvkr1409/testwebapp-1:latest
           ports:
             - containerPort: 8080
               protocol: TCP
