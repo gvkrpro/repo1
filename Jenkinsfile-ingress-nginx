@@ -100,9 +100,10 @@ stages{
 	
 	stage("Deploy to EKS-nginx-Ingress"){
 		steps{
+			script{
 				sh '''
 kubectl.exe apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/aws/1.22/deploy.yaml || true
-sed -i "s/latest/${tag_name}/g" deployment.yaml
+sed -i "s/latest/\$tag_name/g" deployment.yaml
 cat deployment.yaml
 kubectl apply -f deployment.yaml || true
 kubectl get services
@@ -111,6 +112,7 @@ kubectl get pods
 kubectl apply -f nginx-ingress-deploy.yaml || true
 kubectl get ingress
 '''
+			}
 		}
 	}
 }
