@@ -1,0 +1,242 @@
+pipeline {
+  agent any
+  parameters {
+    string(name: 'ARTIFACT_URL', defaultValue: '', description: 'URL of the artifact to download')
+    string(name: 'TOMCAT_URL', defaultValue: 'http://localhost:8080', description: 'URL of the Tomcat server')
+    string(name: 'TOMCAT_USER', defaultValue: 'admin', description: 'Tomcat user name')
+    password(name: 'TOMCAT_PASSWORD', defaultValue: '', description: 'Tomcat user password')
+  }
+  stages {
+    stage('Rollback') {
+      steps {
+        script {
+          // Get the URL of the previous build's artifact
+          def build = currentBuild.previousBuild
+          if (!build) {
+            error("No previous build found.")
+          }
+          def artifactUrl = "${build.artifactUrl}${env.JOB_NAME}/${build.number}/my-artifact.zip"
+          
+          // Download the artifact
+          def artifactFile = 'my-artifact.zip'
+          sh "curl -o ${artifactFile} ${params.ARTIFACT_URL}"
+          
+          // Deploy the artifact to Tomcat
+          withCredentials([usernamePassword(credentialsId: '', usernameVariable: 'TOMCAT_USER', passwordVariable: 'TOMCAT_PASSWORD')]) {
+            sh "curl -u ${params.TOMCAT_USER}:${params.TOMCAT_PASSWORD} --upload-file ${artifactFile} '${params.TOMCAT_URL}/manager/text/deploy?path=/myapp&update=true'"
+          }
+        }
+      }
+    }
+  }
+}
+
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+pipeline {
+  agent any
+  parameters {
+    string(name: 'NEXUS_URL', defaultValue: 'http://localhost:8081', description: 'URL of the Nexus server')
+    string(name: 'NEXUS_REPO', defaultValue: 'maven-releases', description: 'Name of the Nexus repository')
+    string(name: 'GROUP_ID', defaultValue: '', description: 'Maven Group ID of the artifact')
+    string(name: 'ARTIFACT_ID', defaultValue: '', description: 'Maven Artifact ID of the artifact')
+    string(name: 'TOMCAT_URL', defaultValue: 'http://localhost:8080', description: 'URL of the Tomcat server')
+    string(name: 'TOMCAT_USER', defaultValue: 'admin', description: 'Tomcat user name')
+    password(name: 'TOMCAT_PASSWORD', defaultValue: '', description: 'Tomcat user password')
+  }
+  stages {
+    stage('Rollback') {
+      steps {
+        script {
+          // Get the latest deployed version of the artifact from Nexus
+          def versionsUrl = "${params.NEXUS_URL}/service/rest/v1/search/assets?repository=${params.NEXUS_REPO}&group=${params.GROUP_ID}&name=${params.ARTIFACT_ID}&sort=version&direction=desc"
+          def response = sh(returnStdout: true, script: "curl -s -u admin:admin123 -X GET ${versionsUrl}")
+          def jsonSlurper = new JsonSlurper()
+          def versions = jsonSlurper.parseText(response)
+          if (versions.items.size() < 2) {
+            error("No previous version found.")
+          }
+          def artifactUrl = versions.items[1].downloadUrl
+          
+          // Download the artifact
+          def artifactFile = 'my-artifact.war'
+          sh "curl -o ${artifactFile} ${artifactUrl}"
+          
+          // Deploy the artifact to Tomcat
+          withCredentials([usernamePassword(credentialsId: '', usernameVariable: 'TOMCAT_USER', passwordVariable: 'TOMCAT_PASSWORD')]) {
+            sh "curl -u ${params.TOMCAT_USER}:${params.TOMCAT_PASSWORD} --upload-file ${artifactFile} '${params.TOMCAT_URL}/manager/text/deploy?path=/myapp&update=true'"
+          }
+        }
+      }
+    }
+  }
+}
+
+
+
+##################################################################################################################
+
+pipeline {
+  agent any
+  parameters {
+    string(name: 'NEXUS_URL', defaultValue: 'http://localhost:8081', description: 'URL of the Nexus server')
+    string(name: 'NEXUS_REPO', defaultValue: 'maven-releases', description: 'Name of the Nexus repository')
+    string(name: 'GROUP_ID', defaultValue: '', description: 'Maven Group ID of the artifact')
+    string(name: 'ARTIFACT_ID', defaultValue: '', description: 'Maven Artifact ID of the artifact')
+    string(name: 'TOMCAT_URL', defaultValue: 'http://localhost:8080', description: 'URL of the Tomcat server')
+    string(name: 'TOMCAT_USER', defaultValue: 'admin', description: 'Tomcat user name')
+    password(name: 'TOMCAT_PASSWORD', defaultValue: '', description: 'Tomcat user password')
+  }
+  stages {
+    stage('Rollback') {
+      steps {
+        script {
+          // Get the latest deployed version of the artifact from Nexus
+          def versionsUrl = "${params.NEXUS_URL}/service/rest/v1/search/assets?repository=${params.NEXUS_REPO}&group=${params.GROUP_ID}&name=${params.ARTIFACT_ID}"
+          def response = sh(returnStdout: true, script: "curl -s -u admin:admin123 -X GET ${versionsUrl}")
+          def jsonSlurper = new JsonSlurper()
+          def versions = jsonSlurper.parseText(response)
+          versions.items = versions.items.findAll { it.version =~ /^v\d+\.\d+\.\d+$/ } // filter out non-semver versions
+          versions.items = versions.items.sort { a, b -> compareVersions(a.version, b.version) } // sort by version
+          if (versions.items.size() < 2) {
+            error("No previous version found.")
+          }
+          def artifactUrl = versions.items[1].downloadUrl
+          
+          // Download the artifact
+          def artifactFile = 'my-artifact.war'
+          sh "curl -o ${artifactFile} ${artifactUrl}"
+          
+          // Deploy the artifact to Tomcat
+          withCredentials([usernamePassword(credentialsId: '', usernameVariable: 'TOMCAT_USER', passwordVariable: 'TOMCAT_PASSWORD')]) {
+            sh "curl -u ${params.TOMCAT_USER}:${params.TOMCAT_PASSWORD} --upload-file ${artifactFile} '${params.TOMCAT_URL}/manager/text/deploy?path=/myapp&update=true'"
+          }
+        }
+      }
+    }
+  }
+  
+  def compareVersions(String a, String b) {
+    def normalize = { version ->
+      def parts = version.replace(/^v/, '').tokenize('.')
+      parts.collect { part -> part.toInteger().toString().padLeft(3, '0') }.join('.')
+    }
+    normalize(a) <=> normalize(b)
+  }
+}
+#########################################################################################
+
+pipeline {
+  agent any
+  stages {
+    stage('Download Artifact') {
+      steps {
+        script {
+          def nexusUrl = 'https://nexus.example.com'
+          def nexusUsername = 'my-username'
+          def nexusPassword = 'my-password'
+          def repository = 'my-repo'
+          def group = 'com.example'
+          def artifact = 'my-artifact'
+          def extension = 'jar'
+          def classifier = ''
+          
+          def searchUrl = "${nexusUrl}/service/rest/v1/search/assets?repository=${repository}&group=${group}&name=${artifact}&version=${version}&maven.extension=${extension}&maven.classifier=${classifier}"
+          def searchResult = httpRequest authentication: nexusUsername + ':' + nexusPassword, url: searchUrl, httpMode: 'GET', acceptType: 'APPLICATION_JSON'
+          def searchJson = readJSON text: searchResult.content
+          def latestAsset = searchJson.items[0]
+          
+          def downloadUrl = latestAsset.downloadUrl
+          def filename = latestAsset.name
+          def targetPath = "./${filename}"
+          
+          nexusArtifactDownloader({
+            nexusUrl: nexusUrl,
+            nexusCredentialsId: 'nexus-credentials-id',
+            repository: repository,
+            groupId: group,
+            artifactId: artifact,
+            version: latestAsset.version,
+            extension: extension,
+            classifier: classifier,
+            target: targetPath
+          })
+        }
+      }
+    }
+  }
+}
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+pipeline {
+  agent any
+  stages {
+    stage('Download Artifact') {
+      steps {
+        script {
+          def nexus = nexus(serverId: 'nexus-server-id')
+          def artifact = nexus.latestArtifact(
+            groupId: 'com.example',
+            artifactId: 'my-artifact',
+            repository: 'my-repository',
+            packaging: 'jar'
+          )
+          nexusArtifactDownloader nexusInstance: nexus, groupId: artifact.groupId, artifactId: artifact.artifactId, version: artifact.version, packaging: artifact.packaging, classifier: artifact.classifier, repository: artifact.repositoryName, credentialsId: 'nexus-credentials-id', downloadPath: './my-artifact.jar'
+        }
+      }
+    }
+  }
+}
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+pipeline {
+  agent any
+
+  stages {
+    stage('Download Artifact') {
+      steps {
+        script {
+          def nexusUrl = 'https://nexus.example.com' // Nexus URL
+          def nexusRepo = 'maven-releases' // Nexus repository name
+          def groupId = 'com.example' // Group ID of the artifact
+          def artifactId = 'example-app' // Artifact ID
+          def extension = 'jar' // Artifact file extension
+          def classifier = '' // Artifact classifier, if any
+          
+          // Get the latest version of the artifact
+          def version = nexusLatestVersion(nexusUrl, nexusRepo, groupId, artifactId)
+          
+          // Construct the download URL
+          def downloadUrl = "${nexusUrl}/repository/${nexusRepo}/${groupId.replace('.', '/')}/${artifactId}/${version}/${artifactId}-${version}${classifier}.${extension}"
+          
+          // Download the artifact
+          def artifactFile = downloadArtifact(downloadUrl)
+          
+          // Print the path to the downloaded artifact
+          println "Downloaded artifact: ${artifactFile}"
+        }
+      }
+    }
+  }
+}
+
+// Function to get the latest version of an artifact from Nexus
+def nexusLatestVersion(nexusUrl, nexusRepo, groupId, artifactId) {
+  def response = httpRequest(url: "${nexusUrl}/service/rest/v1/search/assets?repository=${nexusRepo}&group=${groupId}&name=${artifactId}&sort=version&direction=desc&limit=1")
+  def json = new groovy.json.JsonSlurper().parseText(response.content)
+  return json.items[0].version
+}
+
+// Function to download an artifact from a URL
+def downloadArtifact(url) {
+  def artifactFile = new File("${env.WORKSPACE}/${url.tokenize('/').last()}")
+  artifactFile.withOutputStream { outputStream ->
+    new URL(url).withInputStream { inputStream ->
+      outputStream << inputStream
+    }
+  }
+  return artifactFile
+}
