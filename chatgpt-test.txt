@@ -1,5 +1,39 @@
 pipeline {
   agent any
+  environment {
+    GCP_PROJECT = '<your-project-id>'
+    GCS_BUCKET = '<your-bucket-name>'
+  }
+  stages {
+    stage('Rollback to previous version') {
+      steps {
+        script {
+          // Authenticate with GCP using a service account
+          withCredentials([gcpServiceAccount(credentialsId: '<your-credentials-id>', project: env.GCP_PROJECT)]) {
+            sh "gcloud auth activate-service-account --key-file=${credentialsFilePath()}"
+          }
+           def FILE_PATH = sh(script: "gsutil ls -a gs://${env.GCS_BUCKET}/ | grep .zip", returnStdout: true).trim().split('\n')
+          // Get the list of available versions for the file
+          def versions = sh(script: "gsutil ls -a gs://${env.GCS_BUCKET}/${FILE_PATH}", returnStdout: true).trim().split('\n')
+          // Find the previous version
+          def previousVersion = versions[1]
+          // Copy the previous version to the current version
+          sh "gsutil cp ${previousVersion} gs://${env.GCS_BUCKET}/${FILE_PATH}"
+        }
+      }
+    }
+  }
+}
+
+
+
+
+
+
+
+
+pipeline {
+  agent any
   parameters {
     string(name: 'ARTIFACT_URL', defaultValue: '', description: 'URL of the artifact to download')
     string(name: 'TOMCAT_URL', defaultValue: 'http://localhost:8080', description: 'URL of the Tomcat server')
