@@ -1,0 +1,10 @@
+# vars/main.yml
+---
+gcp_project: "your_project_id"
+gcp_zone: "your_zone"
+instance_group_name: "your_instance_group_name"
+autoscaler_name: "your_autoscaler_name"
+min_num_replicas: 0
+max_num_replicas: 10
+weekday_schedule: "0 9-17 * * 1-5"  # Example: Scale up on weekdays from 9 AM to 5 PM
+weekend_schedule: "0 0 * * 6,7"  # Example: Scale down on weekends at midnight
