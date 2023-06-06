@@ -1,0 +1,31 @@
+- name: Get instance group URL
+  uri:
+    url: "https://www.googleapis.com/compute/v1/projects/{{ gcp_project }}/zones/{{ gcp_zone }}/instanceGroups/{{ instance_group_name }}"
+    method: GET
+    return_content: yes
+    headers:
+      Authorization: "Bearer {{ gcp_access_token }}"
+  register: instance_group_info
+
+- name: Configure autoscaling policy
+  uri:
+    url: "https://www.googleapis.com/compute/v1/projects/{{ gcp_project }}/zones/{{ gcp_zone }}/instanceGroupManagers/{{ instance_group_name }}/setInstanceTemplate"
+    method: POST
+    body_format: json
+    body:
+      targetSize: {{ desired_target_size }}
+      instanceTemplate: "{{ instance_template }}"
+    headers:
+      Authorization: "Bearer {{ gcp_access_token }}"
+  when: "'instanceTemplate' not in instance_group_info.json or instance_group_info.json['instanceTemplate'] != '{{ instance_template }}'"
+
+- name: Configure schedule-based autoscaling
+  uri:
+    url: "https://www.googleapis.com/compute/v1/projects/{{ gcp_project }}/zones/{{ gcp_zone }}/instanceGroupManagers/{{ instance_group_name }}/resize"
+    method: POST
+    body_format: json
+    body:
+      size: {{ scale_down_size }}
+    headers:
+      Authorization: "Bearer {{ gcp_access_token }}"
+  when: scaling_enabled
