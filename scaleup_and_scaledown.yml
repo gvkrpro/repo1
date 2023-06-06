@@ -1,3 +1,5 @@
+#In the above example, the scale-up policy is set to scale up the VMs on weekdays at 9 AM with a scaleFactor of 1.0 (100% increase), while the scale-down policy is set to scale down the VMs on weekdays at 5 PM and on weekends at midnight with scaleFactor values of 0.5 (50% decrease) and 0.2 (20% decrease) respectively.
+#
 # tasks/main.yml
 ---
 - name: Apply Autoscaling Policy
