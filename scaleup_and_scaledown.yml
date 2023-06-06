@@ -1,0 +1,29 @@
+# tasks/main.yml
+---
+- name: Apply Autoscaling Policy
+  uri:
+    url: "https://www.googleapis.com/compute/v1/projects/{{ gcp_project }}/zones/{{ gcp_zone }}/autoscalers"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ gcp_access_token }}"
+      Content-Type: "application/json"
+    body:
+      name: "{{ autoscaler_name }}"
+      target: "projects/{{ gcp_project }}/zones/{{ gcp_zone }}/instanceGroups/{{ instance_group_name }}"
+      autoscalingPolicy:
+        minNumReplicas: "{{ min_num_replicas }}"
+        maxNumReplicas: "{{ max_num_replicas }}"
+        scalingSchedules:
+          - schedule: "{{ weekday_scaleup_schedule }}"
+            timezone: "UTC"
+            description: "Scale up on weekdays"
+            scaleFactor: 1.0
+          - schedule: "{{ weekday_scaledown_schedule }}"
+            timezone: "UTC"
+            description: "Scale down on weekdays"
+            scaleFactor: 0.5
+          - schedule: "{{ weekend_scaledown_schedule }}"
+            timezone: "UTC"
+            description: "Scale down on weekends"
+            scaleFactor: 0.2
+  register: autoscaling_result
