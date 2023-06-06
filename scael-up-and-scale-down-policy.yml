@@ -1,0 +1,155 @@
+Certainly! Here's an example of an Ansible role that applies an autoscaling schedule to VMs using the `uri` module:
+
+1. Create a new role called `autoscaling_policy`:
+```bash
+ansible-galaxy init autoscaling_policy
+```
+
+2. Replace the contents of `autoscaling_policy/tasks/main.yml` with the following code:
+
+```yaml
+---
+- name: Apply autoscaling policy to VMs
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: Check if autoscaling policy is required
+      set_fact:
+        autoscaling_required: "{{ autoscaling | default(false) }}"
+        
+    - name: Include tasks based on autoscaling requirement
+      include_tasks: "{{ item }}.yml"
+      loop:
+        - scale_up_weekdays
+        - scale_down_weekends
+        - scale_down_overnight
+
+- import_tasks: scale_up_weekdays.yml
+  when: autoscaling_required and weekday_scaleup_schedule is defined
+
+- import_tasks: scale_down_weekends.yml
+  when: autoscaling_required and weekend_scaledown_schedule is defined
+
+- import_tasks: scale_down_overnight.yml
+  when: autoscaling_required and overnight_scaledown_schedule is defined
+```
+
+3. Create three separate task files `scale_up_weekdays.yml`, `scale_down_weekends.yml`, and `scale_down_overnight.yml` inside the `autoscaling_policy/tasks` directory.
+
+4. In `scale_up_weekdays.yml`, add the following code:
+
+```yaml
+---
+- name: Scale up on weekdays
+  uri:
+    url: "https://www.googleapis.com/compute/v1/projects/{{ gcp_project }}/zones/{{ gcp_zone }}/autoscalers"
+    method: POST
+    headers:
+      Content-Type: "application/json"
+      Authorization: "Bearer {{ gcp_auth_token }}"
+    body:
+      name: "{{ autoscaler_name }}"
+      target: "https://www.googleapis.com/compute/v1/projects/{{ gcp_project }}/zones/{{ gcp_zone }}/instanceGroupManagers/{{ instance_group_name }}"
+      autoscalingPolicy:
+        maxNumReplicas: "{{ max_num_replicas }}"
+        minNumReplicas: "{{ min_num_replicas }}"
+        scaleInControl: 
+          timeWindow:
+            startTime: "07:00"
+            endTime: "17:00"
+            daysOfWeek: 
+              - MONDAY
+              - TUESDAY
+              - WEDNESDAY
+              - THURSDAY
+              - FRIDAY
+  register: autoscaling_result
+
+- name: Print autoscaling_result
+  debug:
+    var: autoscaling_result
+```
+
+5. In `scale_down_weekends.yml`, add the following code:
+
+```yaml
+---
+- name: Scale down on weekends
+  uri:
+    url: "https://www.googleapis.com/compute/v1/projects/{{ gcp_project }}/zones/{{ gcp_zone }}/autoscalers"
+    method: POST
+    headers:
+      Content-Type: "application/json"
+      Authorization: "Bearer {{ gcp_auth_token }}"
+    body:
+      name: "{{ autoscaler_name }}"
+      target: "https://www.googleapis.com/compute/v1/projects/{{ gcp_project }}/zones/{{ gcp_zone }}/instanceGroupManagers/{{ instance_group_name }}"
+      autoscalingPolicy:
+        maxNumReplicas: "{{ max_num_replicas }}"
+        minNumReplicas: "{{ min_num_replicas }}"
+        scaleInControl: 
+          timeWindow:
+            startTime: "02:00"
+            endTime: "02:30"
+            daysOfWeek: 
+              - SATURDAY
+              - SUNDAY
+        coolDownPeriodSec: 1800
+        cpuUtilization:
+          utilizationTarget:
+
+ 0.3
+  register: autoscaling_result
+
+- name: Print autoscaling_result
+  debug:
+    var: autoscaling_result
+```
+
+6. In `scale_down_overnight.yml`, add the following code:
+
+```yaml
+---
+- name: Scale down overnight
+  uri:
+    url: "https://www.googleapis.com/compute/v1/projects/{{ gcp_project }}/zones/{{ gcp_zone }}/autoscalers"
+    method: POST
+    headers:
+      Content-Type: "application/json"
+      Authorization: "Bearer {{ gcp_auth_token }}"
+    body:
+      name: "{{ autoscaler_name }}"
+      target: "https://www.googleapis.com/compute/v1/projects/{{ gcp_project }}/zones/{{ gcp_zone }}/instanceGroupManagers/{{ instance_group_name }}"
+      autoscalingPolicy:
+        maxNumReplicas: "{{ max_num_replicas }}"
+        minNumReplicas: "{{ min_num_replicas }}"
+        scaleInControl: 
+          timeWindow:
+            startTime: "19:00"
+            endTime: "07:00"
+            daysOfWeek: 
+              - MONDAY
+              - TUESDAY
+              - WEDNESDAY
+              - THURSDAY
+              - FRIDAY
+              - SATURDAY
+              - SUNDAY
+        coolDownPeriodSec: 1800
+        cpuUtilization:
+          utilizationTarget: 0.5
+  register: autoscaling_result
+
+- name: Print autoscaling_result
+  debug:
+    var: autoscaling_result
+```
+
+7. Replace the variables in the task files and the main playbook with the appropriate values for your environment.
+
+The above role `autoscaling_policy` can be called with the desired variables to apply the autoscaling policy to the VMs. It includes tasks for scaling up on weekdays, scaling down on weekends, and scaling down overnight.
+
+Make sure to replace the placeholder variables like `gcp_project`, `gcp_zone`, `gcp_auth_token`, `autoscaler_name`, `instance_group_name`, `max_num_replicas`, and `min_num_replicas` with the appropriate values specific to your GCP setup.
+
+Please note that the provided code is a basic example and may require modifications to fit your specific environment and requirements.
