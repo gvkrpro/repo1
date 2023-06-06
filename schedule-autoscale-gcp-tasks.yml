@@ -1,0 +1,29 @@
+# tasks/main.yml
+---
+- name: Create Autoscaler - Weekdays
+  google.cloud.gcp_compute_autoscaler:
+    project: "{{ gcp_project }}"
+    zone: "{{ gcp_zone }}"
+    name: "{{ autoscaler_name }}-weekdays"
+    target: "{{ instance_group_name }}"
+    autoscalingPolicy:
+      minNumReplicas: "{{ min_num_replicas }}"
+      maxNumReplicas: "{{ max_num_replicas }}"
+      scalingSchedules:
+        - schedule: "{{ weekday_schedule }}"
+          timezone: "UTC"
+  register: autoscaler_weekdays_result
+
+- name: Create Autoscaler - Weekends
+  google.cloud.gcp_compute_autoscaler:
+    project: "{{ gcp_project }}"
+    zone: "{{ gcp_zone }}"
+    name: "{{ autoscaler_name }}-weekends"
+    target: "{{ instance_group_name }}"
+    autoscalingPolicy:
+      minNumReplicas: "{{ min_num_replicas }}"
+      maxNumReplicas: "{{ max_num_replicas }}"
+      scalingSchedules:
+        - schedule: "{{ weekend_schedule }}"
+          timezone: "UTC"
+  register: autoscaler_weekends_result
