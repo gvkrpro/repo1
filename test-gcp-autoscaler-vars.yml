@@ -1,0 +1,8 @@
+gcp_project: "your_project_id"
+gcp_zone: "your_zone"
+instance_group_name: "your_instance_group_name"
+instance_template: "your_instance_template_name"
+desired_target_size: 1  # Set the desired target size for normal operation
+scale_down_size: 0  # Set the desired target size for scaling down
+scaling_enabled: True  # Set this to False if you want to disable scaling during weekends and overnight
+gcp_access_token: "your_gcp_access_token"
