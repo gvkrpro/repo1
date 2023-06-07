@@ -1,0 +1,44 @@
+- name: Create Autoscaler
+  hosts: localhost
+  gather_facts: false
+  vars:
+    gcp_project: "your-project-id"
+    gcp_zone: "your-zone"
+    gcp_auth_token: "your-auth-token"
+    autoscaler_name: "your-autoscaler-name"
+    instance_group_url: "your-instance-group-url"
+  tasks:
+    - name: Create Autoscaler
+      uri:
+        url: "https://www.googleapis.com/compute/v1/projects/{{ gcp_project }}/zones/{{ gcp_zone }}/autoscalers"
+        method: POST
+        headers:
+          Authorization: "Bearer {{ gcp_auth_token }}"
+          Content-Type: "application/json"
+        body_format: json
+        body:
+          name: "{{ autoscaler_name }}"
+          target: "{{ instance_group_url }}"
+          autoscalingPolicy:
+            minNumReplicas: 1
+            maxNumReplicas: 10
+          scheduling:
+            preemptible: false
+            onHostMaintenance: "MIGRATE"
+          scalingSchedule:
+            schedule:
+              - startTime: "08:00"
+                endTime: "18:00"
+                dayOfWeek: ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"]
+                minNumReplicas: 1
+                maxNumReplicas: 10
+              - startTime: "18:00"
+                endTime: "08:00"
+                dayOfWeek: ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"]
+                minNumReplicas: 0
+                maxNumReplicas: 3
+              - startTime: "00:00"
+                endTime: "23:59"
+                dayOfWeek: ["SATURDAY", "SUNDAY"]
+                minNumReplicas: 0
+                maxNumReplicas: 3
