@@ -1,0 +1,24 @@
+- name: Delete Autoscaler
+  hosts: localhost
+  gather_facts: false
+
+  vars:
+    project_id: "your-project-id"
+    region: "your-region"
+    autoscaler_name: "your-autoscaler-name"
+
+  tasks:
+    - name: Delete Autoscaler
+      uri:
+        url: "https://compute.googleapis.com/compute/beta/projects/{{ project_id }}/regions/{{ region }}/autoscalers/{{ autoscaler_name }}"
+        method: DELETE
+        return_content: yes
+        headers:
+          Content-Type: "application/json"
+          Authorization: "Bearer {{ gcp_access_token }}"
+        validate_certs: yes
+      register: response
+
+    - name: Display Response
+      debug:
+        var: response
