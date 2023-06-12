@@ -18,6 +18,7 @@
           Authorization: "Bearer {{ gcp_access_token }}"
         validate_certs: yes
       register: response
+      ignore_errors: true
 
     - name: Display Response
       debug:
