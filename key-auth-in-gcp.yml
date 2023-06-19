@@ -1,0 +1,53 @@
+---
+- name: Enable key auth access for Artifact Registry
+  hosts: localhost
+  gather_facts: false
+  vars:
+    project_id: "your-project-id"
+    location: "us-central1"
+    repository: "your-repository-name"
+    iam_policy_file: "policy.json"
+    access_token: "<your-access-token>"
+  
+  tasks:
+    - name: Get existing IAM policy for the repository
+      uri:
+        url: "https://artifactregistry.googleapis.com/v1/projects/{{ project_id }}/locations/{{ location }}/repositories/{{ repository }}:getIamPolicy"
+        method: GET
+        headers:
+          Authorization: "Bearer {{ access_token }}"
+        return_content: yes
+      register: existing_policy_response
+
+    - name: Merge existing policy with additional bindings
+      set_fact:
+        merged_policy: "{{ existing_policy_response.json }}"
+      vars:
+        new_policy_file: "{{ lookup('file', iam_policy_file) }}"
+      run_once: true
+
+    - name: Merge additional IAM policy bindings
+      set_fact:
+        merged_policy: "{{ merged_policy | combine(new_policy, recursive=True) }}"
+      vars:
+        new_policy: "{{ lookup('file', new_policy_file) }}"
+      run_once: true
+
+    - name: Set IAM policy for the repository
+      uri:
+        url: "https://artifactregistry.googleapis.com/v1/projects/{{ project_id }}/locations/{{ location }}/repositories/{{ repository }}:setIamPolicy"
+        method: POST
+        headers:
+          Authorization: "Bearer {{ access_token }}"
+          Content-Type: "application/json"
+        body_format: json
+        body: "{{ merged_policy }}"
+        return_content: yes
+      register: set_policy_response
+
+    - name: Show results
+      debug:
+        msg: "{{ item.response }}"
+      loop:
+        - existing_policy_response
+        - set_policy_response
