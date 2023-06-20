@@ -1,0 +1,28 @@
+{
+  "bindings": [
+    {
+      "role": "roles/editor",
+      "members": [
+        "serviceAccount:your-service-account@your-project.iam.gserviceaccount.com"
+      ]
+    },
+    {
+      "role": "roles/artifactregistry.serviceAgent",
+      "members": [
+        "serviceAccount:your-service-account@your-project.iam.gserviceaccount.com"
+      ]
+    },
+    {
+      "role": "roles/artifactregistry.reader",
+      "members": [
+        "serviceAccount:another-service-account@your-project.iam.gserviceaccount.com"
+      ]
+    },
+    {
+      "role": "roles/artifactregistry.writer",
+      "members": [
+        "serviceAccount:another-service-account@your-project.iam.gserviceaccount.com"
+      ]
+    }
+  ]
+}
