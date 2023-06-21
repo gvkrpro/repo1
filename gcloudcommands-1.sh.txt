@@ -8,3 +8,13 @@ for dataset in ${datasets}
 do
     gcloud bq datasets delete --project=${project_id} ${dataset} --quiet
 done
+
+
+#########################################
+@echo off
+
+set project_id=your-project-id
+
+for /f "delims=" %%d in ('gcloud bq datasets list --project=%project_id% --format="value(datasetId)"') do (
+  gcloud bq datasets delete --project=%project_id% %%d --quiet
+)
