@@ -18,3 +18,33 @@ set project_id=your-project-id
 for /f "delims=" %%d in ('gcloud bq datasets list --project=%project_id% --format="value(datasetId)"') do (
   gcloud bq datasets delete --project=%project_id% %%d --quiet
 )
+
+
+
+
+
+To delete all the buckets in Google Cloud Platform (GCP) using the gcloud command-line tool, you can use the following steps:
+#!/bin/bash
+
+project_id="your-project-id"
+
+buckets=$(gsutil ls -p $project_id)
+
+for bucket in $buckets
+do
+    gsutil rm -r $bucket
+done
+
+
+
+
+
+
+To delete all the buckets in Google Cloud Platform (GCP) using the gcloud command-line tool on Windows, you can follow these steps:
+@echo off
+
+set project_id=your-project-id
+
+for /f "delims=" %%b in ('gsutil ls -p %project_id%') do (
+  gsutil rm -r %%b
+)
