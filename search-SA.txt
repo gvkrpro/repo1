@@ -1,0 +1,13 @@
+#!/bin/bash
+
+search_directory="/path/to/search/directory"
+service_account_name="your_service_account_name"
+
+# Use find command to search for JSON files
+find "$search_directory" -type f -name "*.json" -print0 |
+while IFS= read -r -d '' file; do
+    # Use grep to search for the service account name as a whole word within each file
+    if grep -wq "$service_account_name" "$file"; then
+        echo "Match found in file: $file"
+    fi
+done
