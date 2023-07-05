@@ -11,3 +11,17 @@ while IFS= read -r -d '' file; do
         echo "Match found in file: $file"
     fi
 done
+
+
+
+
+
+
+############################
+#!/bin/bash
+
+service_account_name="app"
+json_file="/path/to/your/json/file.json"
+
+# Remove the matching block from the JSON file
+jq --arg name "$service_account_name" 'del(.standard_role_bindings | .. | select(.principal? == "serviceaccount:\($name)@gcp-project.com"))' "$json_file" > tmpfile && mv tmpfile "$json_file"
