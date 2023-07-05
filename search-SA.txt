@@ -82,3 +82,72 @@ jq --arg name "$service_account_name" 'del(.serviceaccounts[$name])' "$json_file
 jq 'if (.serviceaccounts | length > 1) then .serviceaccounts |= to_entries | map(if (.value | type == "string") then .key + ": " + "\"" + .value + "\"" else . end) | .[-1] |= . + "," | from_entries else . end' "$json_file" > tmpfile && mv tmpfile "$json_file"
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+##################################################
+From the below code if i pass the service account name as app then it have to copy the  matching   { "principal": "serviceaccount:app@gcp-project.com"} this full block from the below code to another file which has same role if that role is not there then it has to add the role and then add the service account block to that another file
+
+{
+"standard_role_bindings":{
+   "roles/bigquery.admin":[
+      {
+      "principal": "serviceaccount:app@gcp-project.com"
+      },
+      {
+      "principal": "serviceaccount:app1@gcp-project.com"
+      },
+   ],
+   "roles/bigquery.jobUser":[
+      {
+      "principal": "serviceaccount:app@gcp-project.com"
+      },
+      {
+      "principal": "serviceaccount:app1@gcp-project.com"
+      },
+   ]
+}
+what if multiple roles are having same service account
+
+
+#!/bin/bash
+
+service_account_name="app"
+source_json_file="/path/to/source.json"
+destination_json_file="/path/to/destination.json"
+
+# Check if the destination JSON file exists
+if [ ! -f "$destination_json_file" ]; then
+  # Create an empty JSON object if the destination file doesn't exist
+  echo '{}' > "$destination_json_file"
+fi
+
+# Extract the matching blocks from the source JSON file
+matching_blocks=$(jq --arg name "$service_account_name" '.standard_role_bindings | to_entries | map(select(.value[]?.principal == "serviceaccount:\($name)@gcp-project.com")) | from_entries' "$source_json_file")
+
+# Loop through the matching blocks and add them to the destination JSON file under each corresponding role
+echo "$matching_blocks" | jq -c 'to_entries[] | {(.key): [.value]}' | while IFS= read -r block; do
+  role_name=$(echo "$block" | jq -r 'keys[]')
+  
+  # Check if the role is present in the destination JSON file
+  if [ $(jq --arg role "$role_name" 'has($role)' "$destination_json_file") == "false" ]; then
+    # Add the role to the destination JSON file
+    jq --arg role "$role_name" '. += {($role): []}' "$destination_json_file" > tmpfile && mv tmpfile "$destination_json_file"
+  fi
+  
+  # Add the matching block to the destination JSON file
+  jq --arg role "$role_name" --argjson block "$block" '.[$role] += $block[$role]' "$destination_json_file" > tmpfile && mv tmpfile "$destination_json_file"
+done
+
+
+
+
