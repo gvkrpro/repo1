@@ -18,6 +18,28 @@ done
 
 
 ############################
+From the below code if i pass the service account name as app then it have to remove  matching   { "principal": "serviceaccount:app@gcp-project.com"} this full block from the below code
+
+{
+"standard_role_bindings":{
+   "roles/bigquery.admin":[
+      {
+      "principal": "serviceaccount:app@gcp-project.com"
+      },
+      {
+      "principal": "serviceaccount:app1@gcp-project.com"
+      },
+   ],
+   "roles/bigquery.jobUser":[
+      {
+      "principal": "serviceaccount:app@gcp-project.com"
+      },
+      {
+      "principal": "serviceaccount:app1@gcp-project.com"
+      },
+   ]
+}
+
 #!/bin/bash
 
 service_account_name="app"
@@ -25,3 +47,38 @@ json_file="/path/to/your/json/file.json"
 
 # Remove the matching block from the JSON file
 jq --arg name "$service_account_name" 'del(.standard_role_bindings | .. | select(.principal? == "serviceaccount:\($name)@gcp-project.com"))' "$json_file" > tmpfile && mv tmpfile "$json_file"
+    
+
+
+
+
+
+
+
+
+####################################################
+From the below code i want to remove the service account name full line like   "app": "Its my app Desc" and also need to add comma at the end of service account if its having multiple service accounts if its having one service account then no need to add comma and also no need to add comma when its last service account
+
+{
+"serviceaccounts": {
+  "app": "Its my app Desc",
+  "app1": "Its my app1 Desc"
+  }
+}
+
+
+
+
+
+#!/bin/bash
+
+service_account_name="app"
+json_file="/path/to/your/json/file.json"
+
+# Remove the line containing the service account name from the JSON file
+jq --arg name "$service_account_name" 'del(.serviceaccounts[$name])' "$json_file" > tmpfile && mv tmpfile "$json_file"
+
+# Check if there are multiple service accounts remaining and add commas
+jq 'if (.serviceaccounts | length > 1) then .serviceaccounts |= to_entries | map(if (.value | type == "string") then .key + ": " + "\"" + .value + "\"" else . end) | .[-1] |= . + "," | from_entries else . end' "$json_file" > tmpfile && mv tmpfile "$json_file"
+
+
