@@ -178,3 +178,17 @@ $ jq . prac2.json
   }
 }
 
+#For inserting the id field element inside serviceaccounts
+vinod@DESKTOP-RBNMFJI MINGW64 /d/test-practice
+$ jq --arg id "$(jq -r '.serviceaccounts.id' "prac1.json")" '.serviceaccounts += { "id": $id }' "prac2.json"
+{
+  "serviceaccounts": {
+    "name": "Siddarth Kocchar DC",
+    "email": "siddarth_dc_kocchar@bartoletti-hyatt.example",
+    "gender": "male",
+    "status": "active",
+    "id": "3427978"
+  }
+}
+
+
