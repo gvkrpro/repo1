@@ -72,3 +72,20 @@ service_account_name="test1"
 jq --arg name "$service_account_name" '.Serviceaccounts | select(.[$name])' "$source_file" |
 jq --arg name "$service_account_name" '.serviceaccounts += {($name): .[$name]}' "$destination_file" > tmpfile && mv tmpfile "$destination_file"
 
+
+
+
+
+##################################################################################################################
+Practiced data
+================
+vinod@DESKTOP-RBNMFJI MINGW64 /d/test-practice
+$ jq 'del(.serviceaccounts.id)' prac1.json
+{
+  "serviceaccounts": {
+    "name": "Siddarth Kocchar DC",
+    "email": "siddarth_dc_kocchar@bartoletti-hyatt.example",
+    "gender": "male",
+    "status": "active"
+  }
+}
