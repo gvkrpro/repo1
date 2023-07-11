@@ -140,3 +140,41 @@ $ jq '.' prac1.json
     "status": "active"
   }
 }
+
+
+vinod@DESKTOP-RBNMFJI MINGW64 /d/test-practice
+$ jq '.serviceaccounts' prac1.json
+{
+  "id": 3427978,
+  "name": "Siddarth Kocchar DC",
+  "email": "siddarth_dc_kocchar@bartoletti-hyatt.example",
+  "gender": "male",
+  "status": "active"
+}
+
+vinod@DESKTOP-RBNMFJI MINGW64 /d/test-practice
+$ jq '.' prac1.json
+{
+  "serviceaccounts": {
+    "id": 3427978,
+    "name": "Siddarth Kocchar DC",
+    "email": "siddarth_dc_kocchar@bartoletti-hyatt.example",
+    "gender": "male",
+    "status": "active"
+  }
+}
+
+vinod@DESKTOP-RBNMFJI MINGW64 /d/test-practice
+$ jq 'del(.serviceaccounts.id)' prac1.json > prac2.json
+
+vinod@DESKTOP-RBNMFJI MINGW64 /d/test-practice
+$ jq . prac2.json
+{
+  "serviceaccounts": {
+    "name": "Siddarth Kocchar DC",
+    "email": "siddarth_dc_kocchar@bartoletti-hyatt.example",
+    "gender": "male",
+    "status": "active"
+  }
+}
+
