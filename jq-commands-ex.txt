@@ -1,0 +1,21 @@
+
+
+#!/bin/bash
+
+myParameter="specificWord"
+
+if [ "$myParameter" = "specificWord" ]; then
+    # Perform actions when the parameter matches the specific word
+    echo "Parameter matches the specific word"
+    # Add more commands or actions as needed
+fi
+
+#To remove a matching word element from a JSON file that starts with { and ends with }, you can use a shell script with jq and the del() function. Here's an example:
+
+#!/bin/bash
+
+json_file="/path/to/your/json/file.json"
+matching_word="example"
+
+# Remove the matching word element from the JSON file
+jq "del(.[] | select(. == \"$matching_word\"))" "$json_file" > tmpfile && mv tmpfile "$json_file"
