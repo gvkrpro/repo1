@@ -50,5 +50,25 @@ json_file="/path/to/your/json/file.json"
 # Remove the comma from the last element of the Serviceaccounts object
 jq '.Serviceaccounts |= (to_entries | map(if . == last then .value else . end) | from_entries)' "$json_file" > tmpfile && mv tmpfile "$json_file"
 
+#####################################################
+{
+"Serviceaccounts":{
+"test": "testing Serviceaccount",
+"test1": "testing1 Serviceaccount",
+"test2": "testing2 Serviceaccount"
+}
+}
 
+From above json file code, If i pass an Service account name then i want to copy an service account object or element to some other json file which is having different service accounts
+
+
+#!/bin/bash
+
+source_file="/path/to/source.json"
+destination_file="/path/to/destination.json"
+service_account_name="test1"
+
+# Copy the service account object to the destination file
+jq --arg name "$service_account_name" '.Serviceaccounts | select(.[$name])' "$source_file" |
+jq --arg name "$service_account_name" '.serviceaccounts += {($name): .[$name]}' "$destination_file" > tmpfile && mv tmpfile "$destination_file"
 
