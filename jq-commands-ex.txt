@@ -20,7 +20,7 @@ matching_word="example"
 # Remove the matching word element from the JSON file
 jq "del(.[] | select(. == \"$matching_word\"))" "$json_file" > tmpfile && mv tmpfile "$json_file"
 
-
+######################################
 
 {
 "Serviceaccounts":{
@@ -39,6 +39,16 @@ service_account_name="test1"
 # Remove the specified service account from the JSON file
 jq "del(.Serviceaccounts.\"$service_account_name\")" "$json_file" > tmpfile && mv tmpfile "$json_file"
 
+
+##############################################
+To remove the comma from the last element of the Serviceaccounts object in the given JSON code, you can use a shell script with jq and the to_entries function. Here's an example:
+
+#!/bin/bash
+
+json_file="/path/to/your/json/file.json"
+
+# Remove the comma from the last element of the Serviceaccounts object
+jq '.Serviceaccounts |= (to_entries | map(if . == last then .value else . end) | from_entries)' "$json_file" > tmpfile && mv tmpfile "$json_file"
 
 
 
