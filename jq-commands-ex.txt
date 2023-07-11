@@ -79,10 +79,61 @@ jq --arg name "$service_account_name" '.serviceaccounts += {($name): .[$name]}' 
 ##################################################################################################################
 Practiced data
 ================
+#For deleting the matching field element
 vinod@DESKTOP-RBNMFJI MINGW64 /d/test-practice
 $ jq 'del(.serviceaccounts.id)' prac1.json
 {
   "serviceaccounts": {
+    "name": "Siddarth Kocchar DC",
+    "email": "siddarth_dc_kocchar@bartoletti-hyatt.example",
+    "gender": "male",
+    "status": "active"
+  }
+}
+
+#if i delete last field then also it is removing the comma for the above field
+vinod@DESKTOP-RBNMFJI MINGW64 /d/test-practice
+$ jq 'del(.serviceaccounts.status)' prac1.json
+{
+  "serviceaccounts": {
+    "id": 3427978,
+    "name": "Siddarth Kocchar DC",
+    "email": "siddarth_dc_kocchar@bartoletti-hyatt.example",
+    "gender": "male"
+  }
+}
+
+#For removing the element in the middle
+vinod@DESKTOP-RBNMFJI MINGW64 /d/test-practice
+$ jq 'del(.serviceaccounts.gender)' prac1.json
+{
+  "serviceaccounts": {
+    "id": 3427978,
+    "name": "Siddarth Kocchar DC",
+    "email": "siddarth_dc_kocchar@bartoletti-hyatt.example",
+    "status": "active"
+  }
+}
+
+#For deleting multiple fields and then prints the remaining data but won't update the original file
+vinod@DESKTOP-RBNMFJI MINGW64 /d/test-practice
+$ jq 'del(.serviceaccounts.gender)' prac1.json | jq 'del(.serviceaccounts.status)'
+{
+  "serviceaccounts": {
+    "id": 3427978,
+    "name": "Siddarth Kocchar DC",
+    "email": "siddarth_dc_kocchar@bartoletti-hyatt.example"
+  }
+}
+
+
+
+#For printing the json data
+vinod@DESKTOP-RBNMFJI MINGW64 /d/test-practice
+$ jq '.' prac1.json
+{
+  "serviceaccounts": {
+    "id": 3427978,
     "name": "Siddarth Kocchar DC",
     "email": "siddarth_dc_kocchar@bartoletti-hyatt.example",
     "gender": "male",
