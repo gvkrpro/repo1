@@ -19,3 +19,26 @@ matching_word="example"
 
 # Remove the matching word element from the JSON file
 jq "del(.[] | select(. == \"$matching_word\"))" "$json_file" > tmpfile && mv tmpfile "$json_file"
+
+
+
+{
+"Serviceaccounts":{
+"test": "testing Serviceaccount",
+"test1": "testing1 Serviceaccount",
+"test2": "testing2 Serviceaccount"
+}
+}
+
+From above json file code, i want to remove the service account when i pass the input as service account name using shell script
+#!/bin/bash
+
+json_file="/path/to/your/json/file.json"
+service_account_name="test1"
+
+# Remove the specified service account from the JSON file
+jq "del(.Serviceaccounts.\"$service_account_name\")" "$json_file" > tmpfile && mv tmpfile "$json_file"
+
+
+
+
