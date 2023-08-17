@@ -1,0 +1,6 @@
+node {
+    withCredentials([usernamePassword(credentialsId: "${GitUser}", passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
+        checkout([$class: 'GitSCM', branches: [[name: 'master']], userRemoteConfigs: [[credentialsId: "${GitUser}", url: 'gitRepoUrl']]])
+        // Your other pipeline steps here
+    }
+}
