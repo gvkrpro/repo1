@@ -4,3 +4,14 @@ node {
         // Your other pipeline steps here
     }
 }
+
+
+// someother.groovy
+def cloneRepoWithCredentials(credentialsId, repoUrl) {
+    node {
+        withCredentials([usernamePassword(credentialsId: credentialsId, usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+            sh "git clone $repoUrl"
+            // Additional git commands or steps can be added here
+        }
+    }
+}
