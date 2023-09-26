@@ -66,3 +66,62 @@ ectool setProperty /currentTask/subprocedures/$task_group_name true
 ectool runTask /tasks/$task_group_name
 
 echo "Task group $task_group_name with $num_tasks tasks has been triggered."
+
+
+
+
+
+
+
+
+#!/bin/bash
+
+# Name of the existing pipeline (in a different project)
+pipeline_project="OtherProject"
+pipeline_name="YourExistingPipeline"
+
+# Name of the task group
+task_group_name="MyTaskGroup"
+
+# Number of tasks to create and run in parallel
+num_tasks=5
+
+# Define input sets as associative arrays
+# Each set contains input property names and their corresponding values
+declare -A input_sets=(
+    [Set1]="input_param1=value1 input_param2=value2"
+    [Set2]="input_param1=value3 input_param2=value4"
+    [Set3]="input_param1=value5 input_param2=value6"
+    # Add more input sets as needed
+)
+
+# Create the task group
+ectool createTaskGroup $task_group_name
+
+# Loop to create tasks within the task group
+for ((i=1; i<=$num_tasks; i++)); do
+    task_name="Task_$i"
+
+    # Create a task within the task group
+    ectool createTask $task_group_name $task_name
+
+    # Set the subprocedure property to the existing pipeline in the other project
+    ectool setProperty /projects/$pipeline_project/pipelines/$pipeline_name subprocedure /tasks/$task_group_name/$task_name
+
+    # Get the input set for this task
+    input_set_name="Set$((i % ${#input_sets[@]} + 1))"
+    input_set="${input_sets[$input_set_name]}"
+
+    # Set the input properties for this task based on the selected input set
+    for input_property in $input_set; do
+        ectool setProperty /tasks/$task_group_name/$task_name/$input_property
+    done
+done
+
+# Add the task group to the current task's subprocedures
+ectool setProperty /currentTask/subprocedures/$task_group_name true
+
+# Start the task group (run tasks in parallel)
+ectool runTask /tasks/$task_group_name
+
+echo "Task group $task_group_name with $num_tasks tasks has been triggered with different input sets."
