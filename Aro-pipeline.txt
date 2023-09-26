@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# Name of the existing pipeline
+pipeline_name="YourExistingPipeline"
+
+# Name of the task group
+task_group_name="MyTaskGroup"
+
+# Number of tasks to create and run in parallel
+num_tasks=5
+
+# Create the task group
+ectool createTaskGroup $task_group_name
+
+# Loop to create tasks within the task group
+for ((i=1; i<=$num_tasks; i++)); do
+    task_name="Task_$i"
+
+    # Create a task within the task group
+    ectool createTask $task_group_name $task_name
+
+    # Set the subprocedure property to the existing pipeline
+    ectool setProperty /tasks/$task_group_name/$task_name subprocedure $pipeline_name
+done
+
+# Add the task group to the current task's subprocedures
+ectool setProperty /currentTask/subprocedures/$task_group_name true
+
+# Start the task group (run tasks in parallel)
+ectool runTask /tasks/$task_group_name
+
+echo "Task group $task_group_name with $num_tasks tasks has been triggered."
+
