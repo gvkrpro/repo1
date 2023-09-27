@@ -188,3 +188,33 @@ echo "Task group $task_group_name with $num_tasks tasks has been triggered with 
 
 
 
+
+
+
+
+
+
+#!/bin/bash
+
+# Define the path to the current pipeline or stage
+pipeline_path="/myProject/myPipeline"  # Replace with your pipeline's path
+stage_name="MyStage"                   # Replace with your stage's name
+
+# Retrieve the list of properties for the specified pipeline or stage
+properties=$(ectool getProperty --format json "$pipeline_path/$stage_name")
+
+# Parse the JSON output to extract property names and values
+property_names=$(echo "$properties" | jq -r 'keys[]')
+property_values=$(echo "$properties" | jq -r '.[]')
+
+# Iterate through the properties and print their names and values
+for i in "${!property_names[@]}"; do
+    property_name="${property_names[i]}"
+    property_value="${property_values[i]}"
+    echo "Property Name: $property_name"
+    echo "Property Value: $property_value"
+    echo "---"
+done
+
+
+
