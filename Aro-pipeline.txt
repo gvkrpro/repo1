@@ -218,3 +218,29 @@ done
 
 
 
+###########################################################################
+
+#!/bin/bash
+
+# Define the naming pattern for tasks to be deleted
+task_prefix="Task"
+
+# Loop through tasks and delete them
+for ((i = 1; ; i++)); do
+    task_name="${task_prefix}${i}"
+    
+    # Check if the task exists
+    task_info=$(ectool getTask --taskName "$task_name" 2>&1)
+
+    if [[ $task_info == *"No tasks found"* ]]; then
+        # Task does not exist, exit the loop
+        break
+    else
+        # Task exists, delete it
+        ectool deleteTask --taskName "$task_name"
+        echo "Task '$task_name' deleted."
+    fi
+done
+
+
+
