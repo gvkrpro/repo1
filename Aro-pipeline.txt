@@ -244,3 +244,46 @@ done
 
 
 
+
+
+
+
+#!/bin/bash
+
+# Declare an array and populate it with data
+task_names=("Task1" "Task2" "Task3" "Task4" "Task5")
+
+# Define the filename for saving the array data
+file_name="task_names.txt"
+
+# Save the array data to the file
+printf "%s\n" "${task_names[@]}" > "$file_name"
+echo "Array data saved to $file_name"
+
+
+
+#!/bin/bash
+
+# Define the filename where array data was saved
+file_name="task_names.txt"
+
+# Declare an empty array to store retrieved data
+retrieved_task_names=()
+
+# Read data from the file into the array
+while IFS= read -r line; do
+    retrieved_task_names+=("$line")
+done < "$file_name"
+
+# Print the retrieved array data
+echo "Retrieved Array Data:"
+printf "%s\n" "${retrieved_task_names[@]}"
+
+
+
+
+
+
+
+
+
